@@ -2,19 +2,95 @@
 
 ![Harness](assets/logo.svg)
 
+**Languages:** **English** · [Deutsch](README.DE.md) · [Türkçe](README.TR.md)
+
 Harness measures whether a change to a coding agent's instructions (`CLAUDE.md`,
 `AGENTS.md` and Skills) makes Claude Code or Codex reliably pass a project's own checks
-that it failed before. The unchanged baseline and each candidate run the same task in a
-Linux sandbox, followed by the same deterministic checks. The result is either a
-demonstrated improvement with an exact diff for you to review, or "No demonstrated
-improvement". Nothing in your project changes until you adopt a reviewed candidate by
-typing its digest, and every adoption can be rolled back.
+that it failed before. Nothing in your project changes until you adopt a reviewed
+candidate by typing its digest, and every adoption can be rolled back.
+
+## Why Harness
+
+The model is fixed: you cannot retrain Claude or GPT. What you control is the system
+around it, the instructions and Skills your agent loads in every session. Most teams
+change that system by intuition: add a rule, try it once or twice, keep it if it seemed
+to help. That evidence is anecdotal. It is one sample without a baseline, the CLI may
+have updated in between, and personal hooks, MCP servers and plugins influence the
+outcome. Rules that do nothing stay, and every line is loaded in every session.
+
+Harness turns such a change into a controlled experiment. The unchanged baseline and a
+candidate run the same task in the same pinned environment, repeatedly, each followed
+by the same deterministic checks. The answer is either a demonstrated improvement with
+an exact diff for you to review, or **No demonstrated improvement**.
+
+### With and without Harness
+
+| | Without Harness | With Harness |
+| --- | --- | --- |
+| Evidence | One or two manual tries | Baseline versus candidate, repeated, same checks |
+| Model variance | Unnoticed ("it worked this time") | Repetitions must agree, otherwise no claim |
+| Environment | Your daily setup; CLI version, hooks and MCP servers vary | Pinned CLI, empty configuration, no network |
+| Safety | The agent works in your real project | A sandboxed private copy; your project is untouched until you adopt |
+| Model usage | Unbounded and untracked | Hard request, session, token and time limits |
+| When nothing helps | The instruction file grows anyway | Nothing changes, and the result says so |
+| Undo | `git revert`, if remembered | `harness rollback`, bound to the displayed diff |
+| What remains | A rule of unknown effect | A rule with evidence, and the test that defines it |
+
+### When Harness is worth it
+
+- **Worth it** for recurring agent mistakes that a test can detect, for instruction
+  files a team shares, for conventions that must hold, and when many sessions per week
+  amortize the cost of a run.
+- **Not worth it** when the agent already solves the task (nothing can improve, so the
+  result is *No demonstrated improvement*), when no deterministic check can express the
+  expectation, when the failure stems from model capability rather than instructions,
+  or for one-off tasks.
+
+## How it works
+
+```text
+You: project + task + approved files + acceptance checks + limits
+                           |
+        Preflight: sandbox, trusted host CLI, limits, credential, checks
+                           |
+   Core: baseline -> Propose -> Probe -> Compose -> Select
+                           |
+   Native sessions (Claude Code or Codex CLI) in Bubblewrap, no network
+                 |                                   |
+     loopback forwarder  -->  provider gateway (holds the credential,
+                              caps requests, meters tokens and cost)
+                           |
+   Independent validation: fresh baseline and candidate rollouts + approved checks
+                           |
+   Eligibility: improved / unchanged / regressed / indeterminate
+                           |
+   You review the exact diff -> explicit adoption -> safe rollback
+```
+
+1. **Preflight** refuses to start without a working sandbox, a trusted host CLI,
+   complete limits, a credential and checks that can run in the sandbox.
+2. **Core.** The Propose–Probe–Compose core runs the unchanged baseline, lets the host
+   propose instruction edits, probes and composes them, and selects a final candidate.
+   At `k=1` that selection is trivial.
+3. **Independent validation** runs fresh, interleaved rollouts of baseline and
+   candidate; after each one the approved checks run in a network-denied sandbox.
+4. **Eligibility.** A candidate is eligible only when every approved check passes for
+   it, at least one baseline failure is fixed, nothing regresses and the repetitions
+   agree. Otherwise Harness reports **No demonstrated improvement**. Selection is never
+   evidence of improvement.
+5. **Adoption** is yours alone: you review the exact diff and type its digest in your
+   terminal. Rollback is bound to the same kind of digest.
+
+Neither the model nor a plugin Skill can authorize spend, widen the scope or change
+your live project. Supported instruction surfaces, limited to the files you list:
+`CLAUDE.md` and `.claude/skills/<name>/SKILL.md` for Claude Code; `AGENTS.md` and
+`.agents/skills/<name>/SKILL.md` for Codex.
 
 ## What the plugin contains
 
-Three Skills, one reference document and two icon images for the OpenAI plugin
-directory listing. There are no hooks, MCP servers, commands, agents or executable
-files.
+Three Skills, one reference document, this README in three languages and two icon
+images for the OpenAI plugin directory listing. The Skills and the reference document
+are in English. There are no hooks, MCP servers, commands, agents or executable files.
 
 - `setup`: checks the installed runtime, runs its doctor and an offline demo, and
   previews a project configuration.
