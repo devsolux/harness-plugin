@@ -1,0 +1,14 @@
+{
+  "name": "devsolux-harness",
+  "description": "Harness workflows for local agent harness experiments and evidence review",
+  "owner": {
+    "name": "devsolux"
+  },
+  "plugins": [
+    {
+      "name": "harness",
+      "source": "./plugins/harness",
+      "description": "Bounded local harness experiments with explicit adoption and rollback"
+    }
+  ]
+}

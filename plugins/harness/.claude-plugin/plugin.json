@@ -1,0 +1,11 @@
+{
+  "name": "harness",
+  "displayName": "Harness",
+  "version": "1.0.0",
+  "description": "Bounded local harness experiments with explicit adoption and rollback",
+  "author": {
+    "name": "devsolux"
+  },
+  "repository": "https://github.com/devsolux/harness-plugin",
+  "license": "Apache-2.0"
+}

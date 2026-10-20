@@ -1,0 +1,44 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "harness",
+  "version": "1.0.0",
+  "description": "Bounded local harness experiments with explicit adoption and rollback",
+  "author": {
+    "name": "devsolux"
+  },
+  "repository": "https://github.com/devsolux/harness-plugin",
+  "license": "Apache-2.0",
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/setup/SKILL.md",
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "Harness",
+        "shortDescription": "Test agent instruction changes",
+        "longDescription": "Harness measures whether a change to a coding agent's instructions (AGENTS.md, CLAUDE.md and Skills) makes Codex or Claude Code reliably pass a project's own checks that it failed before. The unchanged baseline and each candidate run the same task in a Linux sandbox, followed by the same deterministic checks. The answer is a demonstrated improvement with an exact diff for you to review, or \"No demonstrated improvement\".\n\nThe plugin adds three Skills. Setup checks the installed runtime and previews a project configuration. Refine previews a refinement with a dry run that makes no model calls, and runs one only after you authorize the spending. Review shows the evidence and the exact diff, and guides an adoption that you confirm by typing its digest, or a rollback.\n\nThe Skills run the separately installed harness command-line program (Python 3.12, Apache-2.0) on your machine, so the plugin needs local execution: in ChatGPT it runs only in the desktop app. The setup Skill downloads the runtime from the plugin's public GitHub release, verifies its checksum and asks before it installs anything. Sandboxed runs need non-root Linux with Bubblewrap, or Docker on macOS. Model-backed refinement uses your own ChatGPT or Claude.ai sign-in, or an API key, through a local gateway that enforces request, token and cost limits. Harness has no telemetry, and nothing in your project changes until you adopt a reviewed candidate.",
+        "developerName": "devsolux",
+        "category": "Productivity",
+        "capabilities": [
+          "Set up the runtime",
+          "Preview refinements",
+          "Run approved refinements",
+          "Review evidence and diffs",
+          "Adopt or roll back"
+        ],
+        "defaultPrompt": [
+          "Set up Harness for this project and run its offline checks",
+          "Preview a Harness refinement of this project's agent instructions",
+          "Review the latest Harness run and show the candidate diff"
+        ],
+        "websiteURL": "https://github.com/devsolux/harness-plugin",
+        "supportURL": "https://github.com/devsolux/harness-plugin/issues",
+        "brandColor": "#0F766E",
+        "logo": "./assets/logo.svg",
+        "composerIcon": "./assets/composer-icon.svg"
+      },
+      "publication": {
+        "release_notes": "First public release: the setup, refine and review Skills for the separately installed Harness runtime 1.0.0, which runs locally and is downloaded from the plugin's GitHub release."
+      }
+    }
+  }
+}
